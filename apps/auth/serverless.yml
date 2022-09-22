@@ -19,7 +19,7 @@ package:
 
 custom:
   domainName: ${ssm:/vitea/${sls:stage}/domain-name}
-  cognitoCustomDomain: auth-vitea.${ssm:/vitea/${sls:stage}/domain-name}
+  cognitoCustomDomain: auth.${ssm:/vitea/${sls:stage}/domain-name}
   sendgrid:
     apiKey: ${ssm:/vitea/${sls:stage}/sendgrid/api-key}
     fromEmail: ${ssm:/vitea/${sls:stage}/sendgrid/from-email}

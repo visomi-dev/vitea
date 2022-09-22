@@ -1,0 +1,41 @@
+{
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.formatOnSave": false
+  },
+  "[typescriptreact]": {
+    "editor.formatOnSave": false
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.workingDirectories": [
+    {
+      "directory": "./apps/auth",
+      "changeProcessCWD": true
+    },
+    {
+      "directory": "./apps/web",
+      "changeProcessCWD": true
+    }
+  ],
+  "cSpell.language": "en,es,en-US,en-GB,es-ES,es-MX",
+  "cSpell.words": [
+    "airbnb",
+    "autenticacion",
+    "clsx",
+    "contrasena",
+    "headlessui",
+    "heroicons",
+    "languagedetector",
+    "linebreak",
+    "Lngs",
+    "maskdata",
+    "middlewares",
+    "Pipeable",
+    "sendgrid",
+    "sesion",
+    "tailwindcss",
+    "vitea"
+  ]
+}

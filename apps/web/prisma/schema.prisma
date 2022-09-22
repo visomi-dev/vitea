@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Currency {
+  USD
+  EUR
+  MXN
+}
+
+model Ledger {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  amount   Float
+  currency Currency
+  color    String
+  tags     String[]
+  uuid     String
+  owner    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ledgers")
+}

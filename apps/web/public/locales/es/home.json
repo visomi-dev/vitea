@@ -1,0 +1,20 @@
+{
+  "title": "vitea - Finanzas Personales",
+  "description": "Plataforma de finanzas personales para todos",
+  "header": {
+    "navbar": {
+      "signIn": "Iniciar Sesión",
+      "signUp": "Registrarse",
+      "dashboard": "Mi tablero"
+    }
+  },
+  "hero": {
+    "title": "Finanzas personales",
+    "titleBold": "simples",
+    "titleEnd": "para todos",
+    "text": "vitea es una plataforma de finanzas personales que te ayudara a cumplir tus metas financieras, como pagar tus deudas, ahorrar para un carro o casa, invertir o simplemente poder tener un respiro de tus cuentas.",
+    "freeProTier": "Comienza gratis 3 meses en PRO",
+    "watchVideo": "Ver video",
+    "companiesUsingvitea": "Con la confianza de estas seis empresas hasta ahora"
+  }
+}

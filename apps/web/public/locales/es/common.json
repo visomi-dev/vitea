@@ -1,0 +1,17 @@
+{
+  "routes": {
+    "auth": {
+      "base": "/autenticacion",
+      "signUp": "/autenticacion/registro",
+      "signUpConfirm": "/autenticacion/verificar-cuenta",
+      "signIn": "/autenticacion/iniciar-sesion",
+      "forgottenPassword": "/autenticacion/olvide-mi-contrasena",
+      "passwordRecovery": "/autenticacion/recuperar-contrasena",
+      "signOut": "/autenticacion/cerrar-sesion"
+    },
+
+    "dashboard": "/tablero",
+    "onboarding": "/comenzar"
+  },
+  "signOut": "Cerrar sesión"
+}

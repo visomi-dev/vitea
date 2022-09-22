@@ -1,0 +1,13 @@
+{
+  "title": "vitea - Verificar cuenta",
+  "heading": {
+    "title": "Verificar cuenta"
+  },
+  "form": {
+    "pin": {
+      "label": "Código de confirmación"
+    }
+  },
+  "resendCode": "Reenviar código de confirmación",
+  "defaultErrorCode": "Ocurrió un error al intentar verificar tu cuenta, por favor intenta de nuevo o contacta con soporte técnico."
+}

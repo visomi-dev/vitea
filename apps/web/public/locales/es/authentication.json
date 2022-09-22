@@ -1,0 +1,37 @@
+{
+  "headings": {
+    "titles": {
+      "registro": "Registrarse",
+      "verificar-cuenta": "Verificar cuenta",
+      "iniciar-sesion": "Iniciar sesión",
+      "olvide-mi-contrasena": "Olvide mi contraseña",
+      "recuperar-contrasena": "Recuperar contraseña"
+    }
+  },
+  "form": {
+    "email": {
+      "label": "Correo electrónico",
+      "placeholder": "Ingresa tu correo electrónico",
+      "errorMessage": "Ingresa un correo electrónico válido, ejemplo: usuario@dominio.com"
+    },
+    "password": {
+      "label": "Contraseña",
+      "placeholder": "Ingresa tu contraseña",
+      "errorMessage": "Ingresa una contraseña válida, ejemplo: Contraseña123!"
+    },
+    "passwordConfirm": {
+      "label": "Confirmar contraseña",
+      "placeholder": "Repite tu contraseña",
+      "errorMessage": "Las contraseñas no coinciden"
+    }
+  },
+  "passwordRequirements": {
+    "title": "La contraseña debe contener al menos:",
+    "upperCase": "1 Mayúscula",
+    "lowerCase": "1 Minúscula",
+    "number": "1 Número",
+    "specialCharacter": "1 Carácter especial (Ej. $-.<,%?=)",
+    "length": "Más de 8 dígitos"
+  },
+  "codeMismatchException": "Código inválido, verificalo e intentalo de nuevo."
+}

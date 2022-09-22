@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "license": "MIT",
+  "workspaces": {
+    "packages": [
+      "apps/*"
+    ],
+    "nohoist": [
+      "**/serverless-bundle",
+      "**/serverless-bundle/**",
+      "**/prisma",
+      "**/prisma/**",
+      "**/@prisma/client",
+      "**/@prisma/client/**"
+    ]
+  },
+  "scripts": {
+    "lint": "lerna run lint",
+    "clean": "find ./apps -name 'node_modules' -type d -prune -exec rm -rf '{}' + && rm -f yarn.lock",
+    "clean:serverless": "find ./packages -name '.serverless' -type d -prune -exec rm -rf '{}' +"
+  },
+  "devDependencies": {
+    "lerna": "^5.5.1",
+    "prisma": "^4.3.1"
+  },
+  "name": "vitea"
+}

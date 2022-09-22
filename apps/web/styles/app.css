@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .control
+    input:not(:empty):not(:placeholder-shown):not(:autofill):not(:focus):invalid {
+    @apply border-red-400;
+  }
+
+  .control input ~ p.error,
+  *:not(.control) p.error.hidden {
+    @apply max-h-0;
+  }
+
+  .control input ~ p.error {
+    @apply -mt-1;
+  }
+
+  .control
+    input:not(:placeholder-shown):not(:autofill):not(:focus):invalid
+    ~ p.error {
+    @apply mt-0 max-h-96;
+  }
+
+  .control input[type='checkbox'].toggle {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="white" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>');
+  }
+}
+
+@layer utilities {
+  .animation-float {
+    animation: float var(--animation-duration, 4000ms) ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(var(--animation-float-y, -2em));
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  .animation-twinkling {
+    animation: twinkling var(--animation-duration, 4000ms) ease-in-out infinite;
+  }
+
+  @keyframes twinkling {
+    0%,
+    12%,
+    31.999%,
+    58.999%,
+    85.999%,
+    100% {
+      opacity: 0.99;
+      transform: scale(0.99);
+    }
+
+    22.99%,
+    45%,
+    70.999%,
+    95.999% {
+      opacity: 0.4;
+      transform: scale(0.1);
+    }
+  }
+
+  .animation-fade {
+    animation: fade var(--animation-duration, 400ms) ease-in-out;
+  }
+
+  @keyframes fade {
+    0% {
+      opacity: 0;
+    }
+
+    99.99% {
+      opacity: 0.9;
+    }
+  }
+}

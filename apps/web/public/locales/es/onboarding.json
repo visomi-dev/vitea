@@ -1,0 +1,19 @@
+{
+  "queries": {
+    "step": "seccion"
+  },
+  "steps": {
+    "welcome": "bienvenida",
+    "goals": "metas",
+    "budgets": "presupuestos"
+  },
+  "title": "vitea - Comenzar",
+  "welcome": {
+    "title": "Bienvenido a vitea",
+    "subtitle": "tu app de finanzas personales.",
+    "description": "Para comenzar selecciona el propósito que le darás a la plataforma"
+  },
+  "setups": {
+    "submit": "Seleccionar"
+  }
+}

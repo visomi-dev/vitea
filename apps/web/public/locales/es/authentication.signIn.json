@@ -1,0 +1,23 @@
+{
+  "title": "vitea - Iniciar sesión",
+  "errorMessage": "Ocurrió un error al intentar iniciar sesión, por favor intenta de nuevo o contacta con soporte técnico.",
+  "heading": {
+    "title": "Iniciar sesión"
+  },
+  "form": {
+    "keepMeLoggedIn": {
+      "label": "Mantener sesión"
+    },
+    "button": {
+      "label": "Iniciar sesión"
+    }
+  },
+  "withProvider": {
+    "message": "o inicia sesión con:",
+    "google": "oogle"
+  },
+  "links": {
+    "signUp": "¿Aún no tienes una cuenta? ¡Regístrate!",
+    "forgottenPassword": "¿Olvidaste la contraseña? ¡Recupérala!"
+  }
+}

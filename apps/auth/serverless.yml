@@ -1,0 +1,343 @@
+service: vitea-auth
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  memorySize: 128
+
+plugins:
+  - serverless-bundle
+  - serverless-iam-roles-per-function
+  - serverless-prune-plugin
+
+package:
+  individually: true
+
+custom:
+  domainName: ${ssm:/vitea/${sls:stage}/domain-name}
+  cognitoCustomDomain: auth-vitea.${ssm:/vitea/${sls:stage}/domain-name}
+  sendgrid:
+    apiKey: ${ssm:/vitea/${sls:stage}/sendgrid/api-key}
+    fromEmail: ${ssm:/vitea/${sls:stage}/sendgrid/from-email}
+    verificationCodeTemplateId: ${ssm:/vitea/${sls:stage}/sendgrid/verification-code-template-id}
+    passwordResetCodeTemplateId: ${ssm:/vitea/${sls:stage}/sendgrid/password-reset-code-template-id}
+  bundle:
+    linting: false
+    tsConfig: 'tsconfig.app.json'
+  prune:
+    automatic: true
+    number: 3
+
+functions:
+  triggersCognitoPreSignUp:
+    handler: src/lambdas/triggers/cognito/preSignUp.handler
+    role: TriggersCognitoPreSignUpRole
+    events:
+      - cognitoUserPool:
+          pool: Viteavitea
+          trigger: PreSignUp
+          forceDeploy: true
+
+  triggersCognitoCustomEmailSender:
+    environment:
+      KMS_KEY_ARN: !GetAtt KmsKey.Arn
+      SENDGRID_API_KEY: ${self:custom.sendgrid.apiKey}
+      SENDGRID_VERIFICATION_CODE_TEMPLATE_ID: ${self:custom.sendgrid.verificationCodeTemplateId}
+      SENDGRID_PASSWORD_RESET_CODE_TEMPLATE_ID: ${self:custom.sendgrid.passwordResetCodeTemplateId}
+    handler: src/lambdas/triggers/cognito/customEmailSender.handler
+    role: TriggersCognitoCustomEmailSenderRole
+
+  triggersCognitoPreTokenGeneration:
+    handler: src/lambdas/triggers/cognito/preTokenGeneration.handler
+    role: TriggersCognitoPreTokenGenerationRole
+    events:
+      - cognitoUserPool:
+          pool: Viteavitea
+          trigger: PreTokenGeneration
+          forceDeploy: true
+
+resources:
+  Resources:
+    KmsKey:
+      Type: AWS::KMS::Key
+      Properties:
+        Enabled: true
+        KeyPolicy:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+              Action: 'kms:*'
+              Resource: '*'
+
+    CognitoUserPoolViteavitea:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: vitea-${sls:stage}
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Name: verified_email
+              Priority: 1
+        AutoVerifiedAttributes:
+          - email
+        UsernameAttributes:
+          - email
+        UsernameConfiguration:
+          CaseSensitive: false
+        DeviceConfiguration:
+          ChallengeRequiredOnNewDevice: false
+          DeviceOnlyRememberedOnUserPrompt: false
+        Schema:
+          - Name: name
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+          - Name: email
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+          - Name: uuid
+            AttributeDataType: String
+            Mutable: true
+        LambdaConfig:
+          CustomEmailSender:
+            LambdaArn: !GetAtt TriggersCognitoCustomEmailSenderLambdaFunction.Arn
+            LambdaVersion: 'V1_0'
+          KMSKeyID: !GetAtt KmsKey.Arn
+
+    ViteaviteaUserPoolDomain:
+      Type: AWS::Cognito::UserPoolDomain
+      DependsOn:
+        - CognitoUserPoolViteavitea
+      Properties:
+        UserPoolId: !Ref CognitoUserPoolViteavitea
+        Domain: ${self:custom.cognitoCustomDomain}
+        CustomDomainConfig:
+          CertificateArn: ${ssm:/vitea/${sls:stage}/certificate-arn}
+
+    ViteaviteaUserPoolResourceServer:
+      Type: AWS::Cognito::UserPoolResourceServer
+      DependsOn:
+        - CognitoUserPoolViteavitea
+      Properties:
+        UserPoolId: !Ref CognitoUserPoolViteavitea
+        Identifier: https://${self:custom.cognitoCustomDomain}
+        Name: ${self:custom.cognitoCustomDomain}
+
+    GoogleUserPoolIdentityProvider:
+      Type: AWS::Cognito::UserPoolIdentityProvider
+      DependsOn:
+        - CognitoUserPoolViteavitea
+      Properties:
+        UserPoolId: !Ref CognitoUserPoolViteavitea
+        ProviderName: Google
+        ProviderType: Google
+        ProviderDetails:
+          client_id: ${ssm:/vitea/${sls:stage}/cognito/google-identity-provider/client-id}
+          client_secret: ${ssm:/vitea/${sls:stage}/cognito/google-identity-provider/client-secret}
+          authorize_scopes: profile email openid
+        AttributeMapping:
+          email: email
+          email_verified: email_verified
+          family_name: family_name
+          given_name: given_name
+          name: given_name
+          picture: picture
+          username: sub
+
+    TriggersCognitoCustomEmailSenderPermissions:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: !Ref TriggersCognitoCustomEmailSenderLambdaFunction
+        Action: lambda:InvokeFunction
+        Principal: 'cognito-idp.amazonaws.com'
+
+    TriggersCognitoPreSignUpRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: triggersCognitoPreSignUpRole-${sls:stage}
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    !Join [
+                      ':',
+                      [
+                        'arn:aws:logs',
+                        '${aws:region}',
+                        !Ref 'AWS::AccountId',
+                        'log-group:/aws/lambda/*:*:*',
+                      ],
+                    ]
+                - Effect: Allow
+                  Action:
+                    - ec2:CreateNetworkInterface
+                    - ec2:DescribeNetworkInterfaces
+                    - ec2:DetachNetworkInterface
+                    - ec2:DeleteNetworkInterface
+                  Resource: '*'
+                - Effect: 'Allow'
+                  Action:
+                    - cognito-idp:AdminCreateUser
+                    - cognito-idp:ListUsers
+                    - cognito-idp:AdminLinkProviderForUser
+                    - cognito-idp:AdminSetUserPassword
+                  Resource:
+                    !Join [
+                      ':',
+                      [
+                        'arn:aws:cognito-idp',
+                        '${aws:region}',
+                        !Ref 'AWS::AccountId',
+                        'userpool/*',
+                      ],
+                    ]
+
+    TriggersCognitoCustomEmailSenderRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: triggersCognitoCustomEmailSenderRole-${sls:stage}
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    !Join [
+                      ':',
+                      [
+                        'arn:aws:logs',
+                        '${aws:region}',
+                        !Ref 'AWS::AccountId',
+                        'log-group:/aws/lambda/*:*:*',
+                      ],
+                    ]
+                - Effect: Allow
+                  Action:
+                    - ec2:CreateNetworkInterface
+                    - ec2:DescribeNetworkInterfaces
+                    - ec2:DetachNetworkInterface
+                    - ec2:DeleteNetworkInterface
+                  Resource: '*'
+                - Effect: 'Allow'
+                  Action:
+                    - kms:Decrypt
+                  Resource: !GetAtt KmsKey.Arn
+
+    TriggersCognitoPreTokenGenerationRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: triggersCognitoPreTokenGenerationRole-${sls:stage}
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - !Join [
+                        ':',
+                        [
+                          'arn:aws:logs',
+                          '${aws:region}',
+                          !Ref 'AWS::AccountId',
+                          'log-group:/aws/lambda/*:*:*',
+                        ],
+                      ]
+                - Effect: Allow
+                  Action:
+                    - ec2:CreateNetworkInterface
+                    - ec2:DescribeNetworkInterfaces
+                    - ec2:DetachNetworkInterface
+                    - ec2:DeleteNetworkInterface
+                  Resource: '*'
+                - Effect: 'Allow'
+                  Action:
+                    - cognito-idp:ListUsers
+                  Resource:
+                    !Join [
+                      ':',
+                      [
+                        'arn:aws:cognito-idp',
+                        '${aws:region}',
+                        !Ref 'AWS::AccountId',
+                        'userpool/*',
+                      ],
+                    ]
+
+    ViteaviteaWebAppClient:
+      Type: AWS::Cognito::UserPoolClient
+      DependsOn:
+        - CognitoUserPoolViteavitea
+        - GoogleUserPoolIdentityProvider
+      Properties:
+        ClientName: web-app
+        UserPoolId: !Ref CognitoUserPoolViteavitea
+        AllowedOAuthFlows:
+          - code
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+          - aws.cognito.signin.user.admin
+        CallbackURLs:
+          - http://localhost:4200/autenticacion/iniciar-sesion
+          - https://vitea.vitea.dev/autenticacion/iniciar-sesion
+        LogoutURLs:
+          - http://localhost:4200/autenticacion/cerrar-sesion
+          - https://vitea.vitea.dev/autenticacion/cerrar-sesion
+        SupportedIdentityProviders:
+          - Google
+
+  Outputs:
+    userPoolId:
+      Value: !Ref CognitoUserPoolViteavitea
+      Export:
+        Name: vitea-userPoolId-${sls:stage}
+    webAppClientId:
+      Value: !Ref ViteaviteaWebAppClient
+      Export:
+        Name: vitea-webAppClientId-${sls:stage}

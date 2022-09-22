@@ -1,0 +1,19 @@
+{
+  "title": "vitea - Registrarse",
+  "errorMessage": "Ocurrió un error al intentar registrarse, por favor intenta de nuevo o contacta con soporte técnico.",
+  "heading": {
+    "title": "Registrarse"
+  },
+  "form": {
+    "name": {
+      "label": "Nombre",
+      "placeholder": "Ingresa tu nombre completo"
+    },
+    "button": {
+      "label": "Registrarse"
+    }
+  },
+  "links": {
+    "signIn": "¿Ya tienes una cuenta? ¡Inicia Sesión!"
+  }
+}

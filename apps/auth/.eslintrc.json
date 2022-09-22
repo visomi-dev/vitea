@@ -1,0 +1,26 @@
+{
+  "root": true,
+  "extends": ["airbnb-base", "airbnb-typescript/base"],
+  "plugins": ["import", "prettier"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.test.js"],
+      "env": {
+        "jest": true
+      }
+    }
+  ],
+  "rules": {
+    "import/extensions": [
+      "error",
+      {
+        "ts": "never",
+        "json": "always"
+      }
+    ],
+    "import/prefer-default-export": "off"
+  }
+}
